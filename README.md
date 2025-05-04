@@ -70,13 +70,13 @@ It also includes **dark mode** 🌙 that remembers your preference using cookies
 ## 📁 Folder Structure
 
 metadata-swapper/
-├── app.py # Main Flask application
-├── templates/ # HTML templates (index.html, success.html)
-├── static/ # CSS & JavaScript
-│ └── style.css
-├── uploads/ # Uploaded image storage
-├── requirements.txt # Python dependencies
-└── README.md # You're here!
+- app.py # Main Flask application
+- templates/ # HTML templates (index.html, success.html)
+- static/ # CSS & JavaScript
+  - style.css
+- uploads/ # Uploaded image storage
+- Requirements.txt # Python dependencies
+- README.md # You're here!
 
 
 ---
