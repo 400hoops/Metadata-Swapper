@@ -1,0 +1,4 @@
+Flask==2.1.1
+Pillow==8.4.0
+piexif==1.1.2
+pyheif==0.6.0

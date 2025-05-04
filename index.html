@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Metadata Swapper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background-color: #1e1e1e;
+      color: #f1f1f1;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    body.dark-mode form {
+      background: #2c2c2c;
+      border-color: #444;
+    }
+
+    .drop-zone {
+      border: 2px dashed #bbb;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      color: #999;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: border 0.2s, background-color 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover {
+      border-color: #007bff;
+    }
+
+    body.dark-mode .drop-zone {
+      border-color: #666;
+      color: #ccc;
+      background-color: #3a3a3a;
+    }
+
+    .drop-zone input {
+      display: none;
+    }
+
+    img.preview {
+      max-width: 100%;
+      max-height: 200px;
+      margin-top: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    button[type="submit"] {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+
+    body.dark-mode .loading {
+      color: #ccc;
+    }
+
+    #dark-toggle {
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      padding: 6px 10px;
+      font-size: 14px;
+      background-color: #eee;
+      color: #333;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+      z-index: 10;
+    }
+
+    body.dark-mode #dark-toggle {
+      background-color: #444;
+      color: #fff;
+      border-color: #666;
+    }
+
+    @media (max-width: 600px) {
+      #dark-toggle {
+        top: 15px;
+        right: 15px;
+        padding: 5px 8px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body class="{{ 'dark-mode' if dark_mode else '' }}">
+
+  <h1>Swap Image Metadata</h1>
+
+  <form method="POST" enctype="multipart/form-data">
+    <button type="button" id="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+
+    <div class="drop-zone" id="source-drop">
+      Drop Source Image (with metadata) or Click
+      <input type="file" name="source" id="source" accept="image/*" required>
+      <img id="source-preview" class="preview" />
+    </div>
+
+    <div class="drop-zone" id="destination-drop">
+      Drop Destination Image or Click
+      <input type="file" name="destination" id="destination" accept="image/*" required>
+      <img id="destination-preview" class="preview" />
+    </div>
+
+    <button type="submit" onclick="showLoading()">Swap Metadata</button>
+    <div class="loading" id="loading-msg">Processing... Please wait ⏳</div>
+  </form>
+
+  <script>
+    function setupDropZone(dropId, inputId, previewId) {
+      const dropZone = document.getElementById(dropId);
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+
+      dropZone.addEventListener('click', () => input.click());
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#007bff";
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = "#bbb";
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#bbb";
+        const file = e.dataTransfer.files[0];
+        if (file) {
+          input.files = e.dataTransfer;
+          showPreview(file, preview);
+        }
+      });
+
+      input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (file) showPreview(file, preview);
+      });
+    }
+
+    function showPreview(file, imgEl) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imgEl.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function showLoading() {
+      document.getElementById("loading-msg").style.display = "block";
+    }
+
+    function toggleDarkMode() {
+      const body = document.body;
+      body.classList.toggle('dark-mode');
+
+      const toggleBtn = document.getElementById("dark-toggle");
+      toggleBtn.textContent = body.classList.contains('dark-mode') ? "☀️" : "🌙";
+
+      // Set the cookie
+      document.cookie = "dark_mode=" + (body.classList.contains('dark-mode') ? "true" : "false") + "; path=/";
+    }
+
+    setupDropZone("source-drop", "source", "source-preview");
+    setupDropZone("destination-drop", "destination", "destination-preview");
+  </script>
+
+</body>
+
+</html>
